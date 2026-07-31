@@ -1,0 +1,158 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  OWNER
+  BARBER_FIXED
+  BARBER_MOBILE
+  CUSTOMER
+}
+
+enum BarbershopStatus {
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+}
+
+enum LinkStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum AppointmentStatus {
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  NO_SHOW
+}
+
+model User {
+  id        String   @id @default(cuid())
+  clerkId   String   @unique
+  role      Role     @default(CUSTOMER)
+  name      String
+  email     String   @unique
+  phone     String?
+  avatarUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ownedBarbershop  Barbershop?          @relation("Owner")
+  barberLinks      BarberLink[]
+  appointments     Appointment[]        @relation("ClientAppointments")
+  barberAppointments Appointment[]      @relation("BarberAppointments")
+  mobileSettings   MobileBarberSettings?
+
+  @@map("users")
+}
+
+model Barbershop {
+  id          String           @id @default(cuid())
+  ownerId     String           @unique
+  owner       User             @relation("Owner", fields: [ownerId], references: [id], onDelete: Cascade)
+  name        String
+  cnpj        String           @unique
+  status      BarbershopStatus @default(PENDING_APPROVAL)
+  address     String
+  city        String
+  state       String
+  phone       String
+  description String?
+  logoUrl     String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  barberLinks  BarberLink[]
+  services     Service[]
+  appointments Appointment[]
+  workingHours WorkingHours[]
+
+  @@map("barbershops")
+}
+
+model BarberLink {
+  id           String     @id @default(cuid())
+  barbershopId String
+  barbershop   Barbershop @relation(fields: [barbershopId], references: [id], onDelete: Cascade)
+  barberId     String
+  barber       User       @relation(fields: [barberId], references: [id], onDelete: Cascade)
+  status       LinkStatus @default(PENDING)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@unique([barbershopId, barberId])
+  @@map("barber_links")
+}
+
+model Service {
+  id           String     @id @default(cuid())
+  barbershopId String
+  barbershop   Barbershop @relation(fields: [barbershopId], references: [id], onDelete: Cascade)
+  name         String
+  description  String?
+  durationMin  Int
+  price        Decimal    @db.Decimal(10, 2)
+  isActive     Boolean    @default(true)
+  createdAt    DateTime   @default(now())
+
+  appointments Appointment[]
+
+  @@map("services")
+}
+
+model WorkingHours {
+  id           String     @id @default(cuid())
+  barbershopId String
+  barbershop   Barbershop @relation(fields: [barbershopId], references: [id], onDelete: Cascade)
+  dayOfWeek    Int        // 0=Sunday, 6=Saturday
+  openTime     String     // "09:00"
+  closeTime    String     // "18:00"
+  isOpen       Boolean    @default(true)
+
+  @@unique([barbershopId, dayOfWeek])
+  @@map("working_hours")
+}
+
+model Appointment {
+  id           String            @id @default(cuid())
+  barbershopId String?
+  barbershop   Barbershop?       @relation(fields: [barbershopId], references: [id])
+  clientId     String
+  client       User              @relation("ClientAppointments", fields: [clientId], references: [id])
+  barberId     String
+  barber       User              @relation("BarberAppointments", fields: [barberId], references: [id])
+  serviceId    String
+  service      Service           @relation(fields: [serviceId], references: [id])
+  scheduledAt  DateTime
+  endsAt       DateTime
+  status       AppointmentStatus @default(CONFIRMED)
+  notes        String?
+  isHomeService Boolean          @default(false)
+  address      String?           // for home service appointments
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  @@map("appointments")
+}
+
+model MobileBarberSettings {
+  id             String  @id @default(cuid())
+  barberId       String  @unique
+  barber         User    @relation(fields: [barberId], references: [id], onDelete: Cascade)
+  radiusKm       Float   @default(10)
+  deliveryFeeMin Decimal @db.Decimal(10, 2) @default(0)
+  bufferMinutes  Int     @default(30)
+  lat            Float?
+  lng            Float?
+  city           String?
+
+  @@map("mobile_barber_settings")
+}
