@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
+import { useSession } from "next-auth/react";
 import {
   ArrowRight, CheckCircle2, Building2, User, Users,
   CalendarDays, Star
@@ -90,6 +91,19 @@ const steps = [
 ];
 
 export default function LandingPage() {
+  const { data: session } = useSession();
+
+  const roleRedirects: Record<string, string> = {
+    OWNER: "/dashboard/loja",
+    BARBER_FIXED: "/dashboard/cadeira",
+    BARBER_MOBILE: "/dashboard/autonomo",
+    CUSTOMER: "/agendar",
+    ADMIN: "/admin",
+  };
+
+  const userRole = session?.user?.role as string | undefined;
+  const dashboardHref = userRole ? (roleRedirects[userRole] ?? "/onboarding") : null;
+
   return (
     <main className="min-h-screen bg-[#0A0A0A]">
       {/* Nav */}
@@ -101,16 +115,28 @@ export default function LandingPage() {
             <a href="#como-funciona" className="hover:text-white transition-colors">Como funciona</a>
           </div>
           <div className="flex items-center gap-3">
-            <Link href="/sign-in" className="text-sm text-white/60 hover:text-white transition-colors px-3 py-1.5">
-              Entrar
-            </Link>
-            <Link
-              href="/sign-up"
-              className="text-sm font-semibold text-[#0A0A0A] px-4 py-1.5 rounded-lg transition-all hover:opacity-90"
-              style={{ background: "#C9A84C" }}
-            >
-              Começar grátis
-            </Link>
+            {dashboardHref ? (
+              <Link
+                href={dashboardHref}
+                className="text-sm font-semibold text-[#0A0A0A] px-4 py-1.5 rounded-lg transition-all hover:opacity-90"
+                style={{ background: "#C9A84C" }}
+              >
+                Ir para meu painel
+              </Link>
+            ) : (
+              <>
+                <Link href="/sign-in" className="text-sm text-white/60 hover:text-white transition-colors px-3 py-1.5">
+                  Entrar
+                </Link>
+                <Link
+                  href="/sign-up"
+                  className="text-sm font-semibold text-[#0A0A0A] px-4 py-1.5 rounded-lg transition-all hover:opacity-90"
+                  style={{ background: "#C9A84C" }}
+                >
+                  Começar grátis
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </nav>

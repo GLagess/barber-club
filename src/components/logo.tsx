@@ -1,5 +1,6 @@
 "use client";
-import { Scissors } from "lucide-react";
+
+import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -7,13 +8,15 @@ type LogoMarkProps = { size?: number; className?: string };
 export function LogoMark({ size = 32, className }: LogoMarkProps) {
   return (
     <div
-      className={cn("flex items-center justify-center rounded-xl shrink-0", className)}
-      style={{ width: size, height: size, background: "linear-gradient(135deg, #C9A84C 0%, #A07830 100%)" }}
+      className={cn("shrink-0 overflow-hidden rounded-xl", className)}
+      style={{ width: size, height: size }}
     >
-      <Scissors
-        size={size * 0.55}
-        className="text-[#0A0A0A]"
-        strokeWidth={2.5}
+      <Image
+        src="/logo.png"
+        alt="Use Barber Club"
+        width={size}
+        height={size}
+        className="w-full h-full object-cover"
       />
     </div>
   );
