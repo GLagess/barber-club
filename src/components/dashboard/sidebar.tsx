@@ -31,6 +31,8 @@ const barberMobileNav: NavItem[] = [
 
 const customerNav: NavItem[] = [
   { label: "Agendar", href: "/agendar", icon: ShoppingBag },
+  { label: "Barbearias", href: "/agendar/barbearias", icon: Building2 },
+  { label: "A Domicílio", href: "/agendar/domicilio", icon: CalendarRange },
 ];
 
 const navByRole: Record<string, NavItem[]> = {
