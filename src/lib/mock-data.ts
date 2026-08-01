@@ -137,3 +137,17 @@ export const MOCK_STATS_BARBER: Record<string, { appointmentsToday: number; next
   "Josenilson": { appointmentsToday: 4, nextSlot: "10:00", avgRating: 4.6 },
   "Lages":    { appointmentsToday: 5, nextSlot: "11:00", avgRating: 4.9 },
 };
+
+export const MOCK_BARBER_BIOS: Record<string, string> = {
+  "Kassiel": "Especialista em degradê e cortes modernos. 5 anos atuando na Da Vinci, referência em tendências.",
+  "Gabriel": "Mestre em cortes clássicos e navalhados. Formado pela SENAC com especialização em barbas.",
+  "Josenilson": "Referência em barba e bigode. 8 anos de experiência e cliente fiel desde o início.",
+  "Lages": "Proprietário e barbeiro sênior. Especialista em cortes executivos e atendimento VIP.",
+};
+
+export const MOCK_BARBER_SPECIALTIES: Record<string, string[]> = {
+  "Kassiel": ["Degradê", "Corte + Barba", "Corte Social"],
+  "Gabriel": ["Corte Clássico", "Navalhado", "Degradê"],
+  "Josenilson": ["Barba Completa", "Corte Social", "Sobrancelha"],
+  "Lages": ["Corte Executivo", "Corte + Barba", "Degradê"],
+};

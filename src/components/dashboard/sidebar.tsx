@@ -6,7 +6,7 @@ import { signOut } from "next-auth/react";
 import { Logo } from "@/components/logo";
 import {
   LayoutDashboard, CalendarDays, Users, Star, LogOut,
-  Building2, Settings, CalendarRange, ShoppingBag
+  Building2, Settings, CalendarRange, ShoppingBag, ClipboardList
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -33,6 +33,7 @@ const customerNav: NavItem[] = [
   { label: "Agendar", href: "/agendar", icon: ShoppingBag },
   { label: "Barbearias", href: "/agendar/barbearias", icon: Building2 },
   { label: "A Domicílio", href: "/agendar/domicilio", icon: CalendarRange },
+  { label: "Meu Agendamento", href: "/agendar/meu-agendamento", icon: ClipboardList },
 ];
 
 const navByRole: Record<string, NavItem[]> = {

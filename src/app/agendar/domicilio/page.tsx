@@ -2,44 +2,35 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { MapPin, Star, Clock, CheckCircle2, ArrowRight } from "lucide-react";
+import { MapPin, Star, Clock, CheckCircle2, ArrowRight, ExternalLink } from "lucide-react";
 
 const mobileBarbers = [
   {
-    id: "m1",
-    name: "Rafael Duarte",
-    initials: "RD",
-    rating: 4.9,
-    reviews: 83,
-    distanceKm: 2.1,
-    priceFrom: "R$ 55",
-    deliveryFee: "R$ 15",
+    id: "m1", name: "Rafael Duarte", initials: "RD",
+    avatarColor: "#7C3AED",
+    instagram: "@rafaelduarte.barber",
+    rating: 4.9, reviews: 83, distanceKm: 2.1,
+    priceFrom: "R$ 55", deliveryFee: "R$ 15",
     services: ["Corte Social", "Corte + Barba", "Degradê"],
     nextAvailable: "11:00",
     bio: "7 anos de experiência. Especialista em degradê e cortes modernos.",
   },
   {
-    id: "m2",
-    name: "Tiago Vieira",
-    initials: "TV",
-    rating: 4.7,
-    reviews: 51,
-    distanceKm: 4.3,
-    priceFrom: "R$ 50",
-    deliveryFee: "R$ 20",
+    id: "m2", name: "Tiago Vieira", initials: "TV",
+    avatarColor: "#0EA5E9",
+    instagram: "@tiagovieira.barber",
+    rating: 4.7, reviews: 51, distanceKm: 4.3,
+    priceFrom: "R$ 50", deliveryFee: "R$ 20",
     services: ["Corte Social", "Barba", "Sobrancelha"],
     nextAvailable: "14:00",
     bio: "Atendimento premium em casa. Pontual e profissional.",
   },
   {
-    id: "m3",
-    name: "Cauê Mendes",
-    initials: "CM",
-    rating: 4.8,
-    reviews: 67,
-    distanceKm: 1.8,
-    priceFrom: "R$ 60",
-    deliveryFee: "R$ 10",
+    id: "m3", name: "Cauê Mendes", initials: "CM",
+    avatarColor: "#10B981",
+    instagram: "@cauemendes.barber",
+    rating: 4.8, reviews: 67, distanceKm: 1.8,
+    priceFrom: "R$ 60", deliveryFee: "R$ 10",
     services: ["Corte + Barba", "Degradê", "Corte Infantil"],
     nextAvailable: "09:30",
     bio: "Especialista em cortes clássicos e contemporâneos a domicílio.",
@@ -110,14 +101,24 @@ export default function DomicilioPage() {
             <div className="flex items-start gap-4 mb-5">
               <div
                 className="w-14 h-14 rounded-2xl flex items-center justify-center text-base font-bold shrink-0"
-                style={{ background: "rgba(201,168,76,0.12)", color: "#C9A84C", fontFamily: "var(--font-display)" }}
+                style={{ background: `${b.avatarColor}22`, color: b.avatarColor, fontFamily: "var(--font-display)" }}
               >
                 {b.initials}
               </div>
               <div className="flex-1 min-w-0">
                 <h2 className="text-base font-bold text-white mb-0.5">{b.name}</h2>
-                <p className="text-xs text-[#666] mb-2">{b.bio}</p>
-                <div className="flex items-center gap-4 flex-wrap">
+                <p className="text-xs text-[#666] mb-1">{b.bio}</p>
+                <a
+                  href={`https://instagram.com/${b.instagram.replace("@", "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-xs hover:text-white transition-colors mt-1"
+                  style={{ color: "#C9A84C" }}
+                >
+                  <ExternalLink size={11} />
+                  {b.instagram}
+                </a>
+                <div className="flex items-center gap-4 flex-wrap mt-2">
                   <div className="flex items-center gap-1.5">
                     <StarRating rating={b.rating} />
                     <span className="text-xs font-semibold text-white">{b.rating}</span>
