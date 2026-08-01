@@ -45,11 +45,13 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  ownedBarbershop  Barbershop?          @relation("Owner")
-  barberLinks      BarberLink[]
-  appointments     Appointment[]        @relation("ClientAppointments")
-  barberAppointments Appointment[]      @relation("BarberAppointments")
-  mobileSettings   MobileBarberSettings?
+  ownedBarbershop    Barbershop?          @relation("Owner")
+  barberLinks        BarberLink[]
+  appointments       Appointment[]        @relation("ClientAppointments")
+  barberAppointments Appointment[]        @relation("BarberAppointments")
+  mobileSettings     MobileBarberSettings?
+  reviewsGiven       Review[]             @relation("ClientReviews")
+  reviewsReceived    Review[]             @relation("BarberReviews")
 
   @@map("users")
 }
@@ -74,6 +76,7 @@ model Barbershop {
   services     Service[]
   appointments Appointment[]
   workingHours WorkingHours[]
+  reviews      Review[]
 
   @@map("barbershops")
 }
@@ -131,16 +134,35 @@ model Appointment {
   barber       User              @relation("BarberAppointments", fields: [barberId], references: [id])
   serviceId    String
   service      Service           @relation(fields: [serviceId], references: [id])
-  scheduledAt  DateTime
-  endsAt       DateTime
-  status       AppointmentStatus @default(CONFIRMED)
-  notes        String?
-  isHomeService Boolean          @default(false)
-  address      String?           // for home service appointments
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
+  scheduledAt   DateTime
+  endsAt        DateTime
+  status        AppointmentStatus @default(CONFIRMED)
+  notes         String?
+  isHomeService Boolean           @default(false)
+  address       String?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  review Review?
 
   @@map("appointments")
+}
+
+model Review {
+  id            String      @id @default(cuid())
+  appointmentId String      @unique
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  clientId      String
+  client        User        @relation("ClientReviews", fields: [clientId], references: [id])
+  barberId      String
+  barber        User        @relation("BarberReviews", fields: [barberId], references: [id])
+  barbershopId  String?
+  barbershop    Barbershop? @relation(fields: [barbershopId], references: [id])
+  rating        Int         // 1–5
+  comment       String?
+  createdAt     DateTime    @default(now())
+
+  @@map("reviews")
 }
 
 model MobileBarberSettings {
