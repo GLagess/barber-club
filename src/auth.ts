@@ -1,21 +1,13 @@
-import NextAuth, { type DefaultSession } from "next-auth";
+import NextAuth from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
-import type { Role } from "@/generated/prisma/client";
-
-declare module "next-auth" {
-  interface User { role?: Role }
-  interface Session {
-    user: { id: string; role: Role } & DefaultSession["user"]
-  }
-}
+import { authConfig } from "./auth.config";
 
 export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
+  ...authConfig,
   adapter: PrismaAdapter(prisma),
-  session: { strategy: "jwt" },
-  pages: { signIn: "/sign-in" },
   providers: [
     Credentials({
       credentials: {
@@ -41,13 +33,11 @@ export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async jwt({ token, user, trigger }: any) {
       if (user) {
-        token.userId = user.id as string;
-        token.role = user.role as Role;
+        token.userId = user.id;
+        token.role = user.role;
       }
       if (trigger === "update" && token.userId) {
-        const dbUser = await prisma.user.findUnique({
-          where: { id: token.userId as string },
-        });
+        const dbUser = await prisma.user.findUnique({ where: { id: token.userId as string } });
         if (dbUser) token.role = dbUser.role;
       }
       return token;
@@ -55,7 +45,7 @@ export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     session({ session, token }: any) {
       session.user.id = token.userId as string;
-      session.user.role = token.role as Role;
+      session.user.role = token.role;
       return session;
     },
   },
