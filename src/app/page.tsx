@@ -1,21 +1,32 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export default function LandingPage() {
   return (
     <main className="min-h-screen bg-background flex flex-col">
       {/* Hero */}
-      <section className="flex-1 flex flex-col items-center justify-center text-center px-4 py-24 space-y-8">
-        <div className="space-y-4">
-          <p className="text-gold text-sm font-semibold tracking-widest uppercase">
-            A plataforma para barbearias modernas
-          </p>
-          <h1 className="text-5xl md:text-7xl font-bold text-foreground leading-tight">
-            Use Barber Club
-          </h1>
-          <p className="text-muted-foreground text-lg md:text-xl max-w-xl mx-auto">
-            Gestão completa para barbearias, barbeiros fixos e profissionais avulsos — tudo em
-            um só lugar.
-          </p>
+      <section className="flex-1 flex flex-col items-center justify-center text-center px-4 py-20 space-y-8">
+        <div className="space-y-6">
+          <Image
+            src="/logo.png"
+            alt="Use Barber Club"
+            width={200}
+            height={200}
+            className="mx-auto"
+            priority
+          />
+          <div className="space-y-3">
+            <p className="text-gold text-sm font-semibold tracking-widest uppercase">
+              A plataforma para barbearias modernas
+            </p>
+            <h1 className="text-5xl md:text-7xl font-bold text-foreground leading-tight">
+              Use Barber Club
+            </h1>
+            <p className="text-muted-foreground text-lg md:text-xl max-w-xl mx-auto">
+              Gestão completa para barbearias, barbeiros fixos e profissionais avulsos — tudo em
+              um só lugar.
+            </p>
+          </div>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4">

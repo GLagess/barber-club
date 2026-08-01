@@ -15,6 +15,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Use Barber Club",
   description: "A plataforma SaaS para barbearias e profissionais da beleza masculina.",
+  icons: { icon: "/logo.png" },
 };
 
 export default function RootLayout({
