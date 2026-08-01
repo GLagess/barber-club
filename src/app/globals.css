@@ -52,6 +52,7 @@
   --color-gold-dark: var(--gold-dark);
   --color-dark-card: var(--dark-card);
   --color-dark-border: var(--dark-border);
+  --font-display: var(--font-display);
 }
 
 /* Dark/Gold — always dark, no light mode */
@@ -95,6 +96,10 @@
   --gold-dark: oklch(0.52 0.12 74);
   --dark-card: oklch(0.09 0 0);
   --dark-border: oklch(0.18 0 0);
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display), var(--font-geist-sans), sans-serif;
 }
 
 @layer base {
