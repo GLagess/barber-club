@@ -13,6 +13,7 @@ declare module "next-auth" {
 export const authConfig: NextAuthConfig = {
   pages: { signIn: "/sign-in" },
   session: { strategy: "jwt" },
+  trustHost: true,
   providers: [],
   callbacks: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
