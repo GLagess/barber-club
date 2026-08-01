@@ -1,20 +1,20 @@
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { ReviewCard } from "@/components/reviews/review-card";
 import { RatingBadge } from "@/components/reviews/star-rating";
 
 export default async function DashboardLojaPage() {
-  const { userId } = await auth();
-  if (!userId) redirect("/sign-in");
+  const session = await auth();
+  if (!session?.user) redirect("/sign-in");
 
   const user = await prisma.user.findUnique({
-    where: { clerkId: userId },
+    where: { id: session.user.id },
     include: {
       ownedBarbershop: {
         include: {
           reviews: {
-            include: { client: { select: { name: true, avatarUrl: true } }, barber: { select: { name: true } } },
+            include: { client: { select: { name: true, image: true } }, barber: { select: { name: true } } },
             orderBy: { createdAt: "desc" },
             take: 10,
           },
@@ -33,7 +33,6 @@ export default async function DashboardLojaPage() {
   return (
     <main className="min-h-screen bg-background p-8">
       <div className="max-w-5xl mx-auto space-y-8">
-        {/* Header */}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gold">Dashboard da Barbearia</h1>
@@ -42,20 +41,14 @@ export default async function DashboardLojaPage() {
             </p>
           </div>
           {barbershop && (
-            <span
-              className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                barbershop.status === "APPROVED"
-                  ? "bg-green-900/40 text-green-400"
-                  : barbershop.status === "PENDING_APPROVAL"
-                  ? "bg-yellow-900/40 text-yellow-400"
-                  : "bg-red-900/40 text-red-400"
-              }`}
-            >
-              {barbershop.status === "APPROVED"
-                ? "Aprovada"
-                : barbershop.status === "PENDING_APPROVAL"
-                ? "Aguardando aprovação"
-                : "Rejeitada"}
+            <span className={`rounded-full px-3 py-1 text-xs font-semibold ${
+              barbershop.status === "APPROVED" ? "bg-green-900/40 text-green-400"
+              : barbershop.status === "PENDING_APPROVAL" ? "bg-yellow-900/40 text-yellow-400"
+              : "bg-red-900/40 text-red-400"
+            }`}>
+              {barbershop.status === "APPROVED" ? "Aprovada"
+               : barbershop.status === "PENDING_APPROVAL" ? "Aguardando aprovação"
+               : "Rejeitada"}
             </span>
           )}
         </div>
@@ -69,16 +62,12 @@ export default async function DashboardLojaPage() {
           </div>
         ) : (
           <>
-            {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               {[
                 { label: "Agendamentos Hoje", value: "—" },
                 { label: "Barbeiros Vinculados", value: "—" },
                 { label: "Serviços Ativos", value: "—" },
-                {
-                  label: "Avaliação Média",
-                  value: reviews.length > 0 ? avgRating.toFixed(1) : "—",
-                },
+                { label: "Avaliação Média", value: reviews.length > 0 ? avgRating.toFixed(1) : "—" },
               ].map((stat) => (
                 <div key={stat.label} className="rounded-lg border border-dark-border bg-dark-card p-6">
                   <p className="text-sm text-muted-foreground">{stat.label}</p>
@@ -87,32 +76,19 @@ export default async function DashboardLojaPage() {
               ))}
             </div>
 
-            {/* Reviews */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="font-semibold text-foreground">Avaliações da Barbearia</h2>
-                {reviews.length > 0 && (
-                  <RatingBadge rating={avgRating} count={reviews.length} />
-                )}
+                {reviews.length > 0 && <RatingBadge rating={avgRating} count={reviews.length} />}
               </div>
-
               {reviews.length === 0 ? (
                 <div className="rounded-lg border border-dark-border bg-dark-card p-6 text-center">
-                  <p className="text-muted-foreground text-sm">
-                    Nenhuma avaliação ainda. Elas aparecem aqui conforme os clientes concluem agendamentos.
-                  </p>
+                  <p className="text-muted-foreground text-sm">Nenhuma avaliação ainda.</p>
                 </div>
               ) : (
                 <div className="grid gap-3">
                   {reviews.map((r) => (
-                    <ReviewCard
-                      key={r.id}
-                      author={r.client.name}
-                      avatarUrl={r.client.avatarUrl}
-                      rating={r.rating}
-                      comment={r.comment}
-                      createdAt={r.createdAt}
-                    />
+                    <ReviewCard key={r.id} author={r.client.name} avatarUrl={r.client.image} rating={r.rating} comment={r.comment} createdAt={r.createdAt} />
                   ))}
                 </div>
               )}

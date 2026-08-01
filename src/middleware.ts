@@ -1,67 +1,59 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { auth } from "@/auth";
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
 
-const isPublicRoute = createRouteMatcher([
-  "/",
-  "/sign-in(.*)",
-  "/sign-up(.*)",
-  "/api/webhooks/clerk(.*)",
-]);
-
-const isOnboardingRoute = createRouteMatcher(["/onboarding(.*)"]);
+const publicPaths = ["/", "/sign-in", "/sign-up", "/api/auth"];
 
 const roleRedirects: Record<string, string> = {
-  ADMIN: "/admin",
-  OWNER: "/dashboard/loja",
-  BARBER_FIXED: "/dashboard/cadeira",
+  ADMIN:         "/admin",
+  OWNER:         "/dashboard/loja",
+  BARBER_FIXED:  "/dashboard/cadeira",
   BARBER_MOBILE: "/dashboard/autonomo",
-  CUSTOMER: "/agendar",
+  CUSTOMER:      "/agendar",
 };
 
-const rolePaths: Record<string, string> = {
-  ADMIN: "/admin",
-  OWNER: "/dashboard/loja",
-  BARBER_FIXED: "/dashboard/cadeira",
-  BARBER_MOBILE: "/dashboard/autonomo",
-  CUSTOMER: "/agendar",
+const rolePrefixes: Record<string, string[]> = {
+  ADMIN:         ["/admin"],
+  OWNER:         ["/dashboard/loja"],
+  BARBER_FIXED:  ["/dashboard/cadeira"],
+  BARBER_MOBILE: ["/dashboard/autonomo"],
+  CUSTOMER:      ["/agendar"],
 };
 
-export default clerkMiddleware(async (auth, req: NextRequest) => {
-  const { userId, sessionClaims } = await auth();
-  const url = req.nextUrl;
+function isPublic(pathname: string) {
+  return publicPaths.some((p) => pathname === p || pathname.startsWith(p + "/"));
+}
 
-  if (isPublicRoute(req)) return NextResponse.next();
+export default auth((req) => {
+  const { nextUrl, auth: session } = req;
+  const pathname = nextUrl.pathname;
 
-  if (!userId) {
+  if (isPublic(pathname)) return NextResponse.next();
+
+  if (!session?.user) {
     return NextResponse.redirect(new URL("/sign-in", req.url));
   }
 
-  const role = (sessionClaims?.metadata as { role?: string } | undefined)?.role;
+  const role = session.user.role;
 
-  // No role yet → send to onboarding (unless already there)
-  if (!role && !isOnboardingRoute(req)) {
+  // No role yet → onboarding
+  if (!role && pathname !== "/onboarding") {
     return NextResponse.redirect(new URL("/onboarding", req.url));
   }
 
-  // User with role hitting /onboarding → send to their dashboard
-  if (role && isOnboardingRoute(req)) {
-    const dest = roleRedirects[role] ?? "/agendar";
-    return NextResponse.redirect(new URL(dest, req.url));
+  // Has role but hitting /onboarding → send to correct dashboard
+  if (role && pathname.startsWith("/onboarding")) {
+    return NextResponse.redirect(new URL(roleRedirects[role] ?? "/agendar", req.url));
   }
 
-  // Protect role-specific paths: if user is on a path not meant for their role, redirect
+  // Block cross-role access
   if (role) {
-    const ownPath = rolePaths[role];
-    const pathname = url.pathname;
+    const allowed = rolePrefixes[role] ?? [];
+    const allPrefixes = Object.values(rolePrefixes).flat();
+    const isRolePath = allPrefixes.some((p) => pathname.startsWith(p));
+    const isAllowed = allowed.some((p) => pathname.startsWith(p));
 
-    const allRolePaths = Object.values(rolePaths);
-    const isOnWrongRolePath = allRolePaths.some(
-      (p) => pathname.startsWith(p) && !pathname.startsWith(ownPath)
-    );
-
-    if (isOnWrongRolePath) {
-      return NextResponse.redirect(new URL(ownPath, req.url));
+    if (isRolePath && !isAllowed) {
+      return NextResponse.redirect(new URL(roleRedirects[role], req.url));
     }
   }
 
@@ -69,8 +61,5 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
 });
 
 export const config = {
-  matcher: [
-    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
-    "/(api|trpc)(.*)",
-  ],
+  matcher: ["/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)"],
 };

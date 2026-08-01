@@ -1,29 +1,29 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
+import { auth, unstable_update } from "@/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { setUserRole } from "@/lib/clerk";
 import type { Role } from "@/generated/prisma/client";
 
 const roleRedirects: Record<Role, string> = {
-  ADMIN: "/admin",
-  OWNER: "/dashboard/loja",
-  BARBER_FIXED: "/dashboard/cadeira",
+  ADMIN:         "/admin",
+  OWNER:         "/dashboard/loja",
+  BARBER_FIXED:  "/dashboard/cadeira",
   BARBER_MOBILE: "/dashboard/autonomo",
-  CUSTOMER: "/agendar",
+  CUSTOMER:      "/agendar",
 };
 
 export async function completeOnboarding(role: Role): Promise<void> {
-  const { userId } = await auth();
-  if (!userId) redirect("/sign-in");
+  const session = await auth();
+  if (!session?.user?.id) redirect("/sign-in");
 
   await prisma.user.update({
-    where: { clerkId: userId },
+    where: { id: session.user.id },
     data: { role },
   });
 
-  await setUserRole(userId, role);
+  // Force JWT refresh to include new role
+  await unstable_update({ user: { role } });
 
   redirect(roleRedirects[role]);
 }
